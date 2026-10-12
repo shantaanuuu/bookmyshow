@@ -270,14 +270,17 @@ export default function SeatMap({ onOpenFnBModal }) {
           </div>
         ))}
 
-        {/* Cinema Curved Screen Visual */}
-        <div className="pt-12 pb-4 text-center">
-          <div className="relative max-w-lg mx-auto">
-            <div className="h-2 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-[0_0_20px_rgba(34,211,238,0.7)]" />
-            <div className="h-6 bg-gradient-to-b from-cyan-400/20 to-transparent rounded-t-[50%] mt-1" />
-            <p className="text-[11px] font-semibold tracking-widest text-gray-400 uppercase mt-2">
-              All eyes this way please • Screen
-            </p>
+        {/* Cinema Curved Screen Visual with Ambient Lighting Beam */}
+        <div className="pt-16 pb-8 text-center relative overflow-hidden">
+          {/* Ambient Projector Light Cone */}
+          <div className="max-w-2xl mx-auto relative">
+            <div className="screen-curve animate-cinemaLight" />
+            <div className="h-16 bg-gradient-to-b from-cyan-500/15 via-cyan-500/5 to-transparent blur-md -mt-1" />
+            
+            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 text-[10px] font-black uppercase tracking-widest mt-2 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+              IMAX Laser Projection Screen • Dolby Atmos 64-Channel
+            </div>
           </div>
         </div>
       </div>

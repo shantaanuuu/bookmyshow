@@ -22,6 +22,7 @@ export default function MyBookings() {
     cancelBooking,
     calculateRefund,
     navigateTo,
+    setLastBooking,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'upcoming' | 'completed' | 'cancelled'
@@ -221,10 +222,10 @@ export default function MyBookings() {
                         {isConfirmed && (
                           <button
                             onClick={() => {
-                              // set as last booking & navigate
+                              setLastBooking(b);
                               navigateTo('confirmation');
                             }}
-                            className="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                            className="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                           >
                             <Ticket className="w-3.5 h-3.5" /> Digital Ticket
                           </button>

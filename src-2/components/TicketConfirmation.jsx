@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { QRCodeSVG } from 'qrcode.react';
+import confetti from 'canvas-confetti';
 import {
   CheckCircle,
   Download,
@@ -14,22 +15,37 @@ import {
   Smartphone,
   ChevronRight,
   ShieldCheck,
-  Film
+  Film,
+  Sparkles
 } from 'lucide-react';
 
 export default function TicketConfirmation() {
   const { lastBooking, navigateTo } = useApp();
 
+  useEffect(() => {
+    if (lastBooking) {
+      try {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      } catch (err) {
+        // Safe fallback if canvas not available
+      }
+    }
+  }, [lastBooking]);
+
   if (!lastBooking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+      <div className="min-h-screen flex items-center justify-center bg-[#0d101d] p-6 text-white">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">No recent booking found.</p>
+          <p className="text-gray-400 mb-4">No recent booking found.</p>
           <button
             onClick={() => navigateTo('home')}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm"
+            className="px-6 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-red-600/30 cursor-pointer"
           >
-            Go to Movies
+            Explore Movies
           </button>
         </div>
       </div>
@@ -41,28 +57,28 @@ export default function TicketConfirmation() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f5fa] py-12 px-4 sm:px-8">
+    <div className="min-h-screen bg-[#0d101d] py-12 px-4 sm:px-8 text-white">
       <div className="max-w-xl mx-auto">
         {/* Success Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3 shadow-sm animate-bounce">
-            <CheckCircle className="w-10 h-10" />
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center mx-auto mb-3 shadow-xl shadow-emerald-500/30 animate-bounce">
+            <CheckCircle className="w-9 h-9" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900">
+          <h1 className="text-3xl font-black text-white tracking-tight">
             Booking Confirmed! 🎉
           </h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">
-            Your digital ticket is ready. Show this QR code at cinema gate for entry.
+          <p className="text-xs sm:text-sm text-gray-400 mt-1">
+            Your high-security digital pass is active. Scan QR code at the cinema turnstile.
           </p>
 
-          {/* Delivery Simulation Alert (FR-TKT-02, CI-2) */}
-          <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-center justify-center gap-3">
-            <span className="flex items-center gap-1">
-              <Mail className="w-3.5 h-3.5 text-emerald-600" /> Sent to {lastBooking.userEmail}
+          {/* Delivery Simulation Alert */}
+          <div className="mt-4 p-3 bg-emerald-950/60 border border-emerald-500/40 rounded-2xl text-emerald-300 text-xs flex items-center justify-center gap-3 backdrop-blur-md">
+            <span className="flex items-center gap-1.5 font-medium">
+              <Mail className="w-3.5 h-3.5 text-emerald-400" /> Pass sent to {lastBooking.userEmail}
             </span>
-            <span>•</span>
-            <span className="flex items-center gap-1">
-              <Smartphone className="w-3.5 h-3.5 text-emerald-600" /> SMS to {lastBooking.userPhone}
+            <span className="text-emerald-700">•</span>
+            <span className="flex items-center gap-1.5 font-medium">
+              <Smartphone className="w-3.5 h-3.5 text-emerald-400" /> SMS to {lastBooking.userPhone}
             </span>
           </div>
         </div>

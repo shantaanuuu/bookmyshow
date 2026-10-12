@@ -21,9 +21,9 @@ export default function Home() {
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [selectedFormat, setSelectedFormat] = useState('All');
 
-  const languages = ['All', 'Hindi', 'English', 'Telugu', 'Tamil'];
-  const genres = ['All', 'Action', 'Sci-Fi', 'Comedy', 'Horror', 'Drama', 'Concert'];
-  const formats = ['All', '2D', '3D', 'IMAX 3D', '4DX', 'IMAX 70mm'];
+  const languages = ['All', 'Hindi', 'English', 'Telugu', 'Tamil', 'Malayalam', 'Kannada', 'Japanese', 'Korean'];
+  const genres = ['All', 'Action', 'Sci-Fi', 'Comedy', 'Horror', 'Drama', 'Concert', 'Animation', 'Thriller', 'Romance', 'Adventure', 'Fantasy', 'Crime', 'Historical'];
+  const formats = ['All', '2D', '3D', 'IMAX 2D', 'IMAX 3D', '4DX', 'IMAX 70mm'];
 
   // Filter application (FR-SRCH-02, FR-SRCH-03)
   const filteredMovies = movies.filter((movie) => {
@@ -44,67 +44,106 @@ export default function Home() {
     return true;
   });
 
+  const [featuredIndex, setFeaturedIndex] = useState(0);
+  const featuredMovies = movies.slice(0, 5);
+  const currentFeatured = featuredMovies[featuredIndex] || movies[0];
+
   return (
-    <div className="min-h-screen bg-[#f5f5fa] pb-16">
-      {/* Hero Banner Showcase */}
-      <section className="bg-gradient-to-r from-gray-900 via-[#1f2533] to-gray-900 text-white py-8 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row items-center gap-8 justify-between">
-            {/* Featured Highlight */}
-            <div className="max-w-xl space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/30 border border-red-500/40 text-red-300 text-xs font-semibold">
+    <div className="min-h-screen bg-[#0d101d] text-gray-100 pb-20 selection:bg-red-500 selection:text-white">
+      {/* Cinematic Hero Billboard Showcase */}
+      <section className="relative text-white py-12 sm:py-16 overflow-hidden border-b border-white/10">
+        {/* Ambient Blurred Backdrop from featured banner */}
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-all duration-1000 scale-105 opacity-25 filter blur-2xl pointer-events-none"
+          style={{ backgroundImage: `url(${currentFeatured.bannerUrl})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0d101d] via-[#0d101d]/80 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(248,68,100,0.2),transparent_50%)] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center gap-10 justify-between">
+            {/* Featured Highlight Left */}
+            <div className="max-w-2xl space-y-5">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-600/20 border border-red-500/40 text-red-400 text-xs font-bold tracking-wide shadow-sm animate-pulse">
                 <Flame className="w-4 h-4 text-red-500" />
-                #1 Trending Release in {selectedCity}
+                #1 BLOCKBUSTER PREMIERE IN {selectedCity.toUpperCase()}
               </div>
-              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-                Kalki 2898 AD
+
+              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-none drop-shadow-md">
+                {currentFeatured.title}
               </h1>
-              <p className="text-gray-300 text-sm leading-relaxed">
-                Experience the futuristic mythological sci-fi blockbuster starring Prabhas, Amitabh Bachchan,
-                and Deepika Padukone in breathtaking IMAX 3D and Dolby Atmos.
+
+              <p className="text-gray-300 text-sm sm:text-base leading-relaxed max-w-xl font-normal">
+                {currentFeatured.description}
               </p>
-              <div className="flex items-center gap-4 text-xs text-gray-300">
-                <span className="flex items-center gap-1 font-bold text-amber-400">
-                  <Star className="w-4 h-4 fill-amber-400" /> 8.9/10
+
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs font-semibold text-gray-300">
+                <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300">
+                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  <span className="font-bold text-sm text-white">{currentFeatured.rating}</span>/10 ({((currentFeatured.votesCount || 1000) / 1000).toFixed(1)}k votes)
                 </span>
-                <span>•</span>
-                <span>Sci-Fi / Action</span>
-                <span>•</span>
-                <span>3h 00m</span>
-                <span>•</span>
-                <span className="px-2 py-0.5 bg-gray-800 rounded border border-gray-700">U/A 16+</span>
+                <span className="px-3 py-1.5 rounded-xl bg-white/10 border border-white/10 text-white font-medium">
+                  {currentFeatured.genre}
+                </span>
+                <span className="px-3 py-1.5 rounded-xl bg-white/10 border border-white/10 text-white font-medium">
+                  {Math.floor(currentFeatured.duration / 60)}h {currentFeatured.duration % 60}m
+                </span>
+                <span className="px-3 py-1.5 rounded-xl bg-red-500/20 border border-red-500/30 text-red-300 uppercase">
+                  {currentFeatured.certification}
+                </span>
               </div>
-              <div className="pt-2 flex flex-wrap gap-3">
+
+              <div className="pt-2 flex flex-wrap items-center gap-4">
                 <button
-                  onClick={() => navigateTo('movieDetails', { eventId: 'm1' })}
-                  className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-red-500/30 transition transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-2"
+                  onClick={() => navigateTo('movieDetails', { eventId: currentFeatured.id })}
+                  className="px-8 py-3.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-sm rounded-2xl shadow-xl shadow-red-600/40 hover:shadow-red-500/60 transition-all transform hover:-translate-y-1 cursor-pointer flex items-center gap-2.5"
                 >
-                  <Film className="w-4 h-4" /> Book Tickets Now
+                  <Film className="w-4 h-4" /> Book Tickets & Shows
                 </button>
-                <div className="flex items-center gap-2 text-xs bg-white/10 px-3 py-2 rounded-xl backdrop-blur-xs">
-                  <Sparkles className="w-4 h-4 text-yellow-300" />
-                  <span>Use promo code <strong>BMS50</strong> for ₹50 off!</span>
+
+                <div className="flex items-center gap-2 text-xs bg-white/5 border border-white/10 px-4 py-3 rounded-2xl backdrop-blur-md text-amber-300">
+                  <Sparkles className="w-4 h-4 text-amber-400 animate-spin" />
+                  <span>Flat ₹50 OFF with code <strong className="text-white font-mono bg-white/10 px-1.5 py-0.5 rounded">BMS50</strong></span>
                 </div>
+              </div>
+
+              {/* Slide dots */}
+              <div className="flex items-center gap-2 pt-2">
+                {featuredMovies.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setFeaturedIndex(idx)}
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
+                      featuredIndex === idx ? 'w-8 bg-red-500' : 'w-2 bg-white/20 hover:bg-white/40'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
 
-            {/* Poster Cards Preview */}
-            <div className="flex gap-4 overflow-x-auto pb-2 max-w-full">
-              {movies.slice(0, 3).map((item) => (
+            {/* Poster Cards Carousel Thumbnails Right */}
+            <div className="flex gap-4 overflow-x-auto pb-4 max-w-full lg:max-w-md no-scrollbar">
+              {featuredMovies.map((item, idx) => (
                 <div
                   key={item.id}
-                  onClick={() => navigateTo('movieDetails', { eventId: item.id })}
-                  className="w-36 sm:w-44 flex-shrink-0 group cursor-pointer"
+                  onClick={() => setFeaturedIndex(idx)}
+                  className={`w-32 sm:w-40 flex-shrink-0 group cursor-pointer transition-all duration-300 ${
+                    featuredIndex === idx
+                      ? 'scale-105 ring-2 ring-red-500 shadow-2xl shadow-red-500/30 rounded-2xl'
+                      : 'opacity-60 hover:opacity-100 hover:scale-102'
+                  }`}
                 >
-                  <div className="relative rounded-2xl overflow-hidden shadow-2xl transition duration-300 group-hover:scale-105 border-2 border-white/10">
+                  <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-gray-900 aspect-[2/3]">
                     <img
                       src={item.posterUrl}
                       alt={item.title}
-                      className="w-full h-52 sm:h-64 object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-2.5">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent flex flex-col justify-end p-2.5">
                       <p className="text-xs font-bold text-white truncate">{item.title}</p>
-                      <span className="text-[10px] text-amber-400 font-medium">★ {item.rating}/10</span>
+                      <span className="text-[10px] text-amber-400 font-semibold flex items-center gap-0.5">
+                        ★ {item.rating}/10
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -117,15 +156,15 @@ export default function Home() {
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         {/* Category Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-6">
+        <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar pb-2 mb-6">
           {['All', 'Movies', 'Events', 'Standup Comedy'].map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition cursor-pointer whitespace-nowrap shadow-xs ${
+              className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
                 selectedCategory === cat
-                  ? 'bg-red-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                  ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-600/40 ring-1 ring-white/30'
+                  : 'bg-[#181c2b] text-gray-400 hover:text-white hover:bg-[#22283d] border border-white/5'
               }`}
             >
               {cat}
@@ -133,17 +172,31 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Multi-Filters Bar (FR-SRCH-02, FR-SRCH-03) */}
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200/80 mb-8 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-gray-700 uppercase tracking-wider pb-2 border-b border-gray-100">
-            <Filter className="w-4 h-4 text-red-500" />
-            Filters:
+        {/* Multi-Filters Bar */}
+        <div className="bg-[#141826]/90 backdrop-blur-xl p-5 rounded-3xl border border-white/10 mb-10 shadow-2xl space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center gap-2 text-xs font-black text-gray-200 uppercase tracking-widest">
+              <Filter className="w-4 h-4 text-red-500" />
+              <span>Smart Catalog Filters</span>
+            </div>
+            {(selectedLanguage !== 'All' || selectedGenre !== 'All' || selectedFormat !== 'All') && (
+              <button
+                onClick={() => {
+                  setSelectedLanguage('All');
+                  setSelectedGenre('All');
+                  setSelectedFormat('All');
+                }}
+                className="text-xs text-red-400 hover:text-red-300 font-bold cursor-pointer"
+              >
+                Reset Filters
+              </button>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Language Filter */}
             <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
                 Languages
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -151,10 +204,10 @@ export default function Home() {
                   <button
                     key={lang}
                     onClick={() => setSelectedLanguage(lang)}
-                    className={`text-xs px-2.5 py-1 rounded-lg border transition ${
+                    className={`text-xs px-3 py-1.5 rounded-xl border transition cursor-pointer font-medium ${
                       selectedLanguage === lang
-                        ? 'bg-red-50 border-red-500 text-red-600 font-medium'
-                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                        ? 'bg-red-600/30 border-red-500 text-red-300 font-bold shadow-xs'
+                        : 'border-white/10 bg-[#1c2236]/60 text-gray-400 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     {lang}
@@ -165,7 +218,7 @@ export default function Home() {
 
             {/* Genre Filter */}
             <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
                 Genres
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -173,10 +226,10 @@ export default function Home() {
                   <button
                     key={gnr}
                     onClick={() => setSelectedGenre(gnr)}
-                    className={`text-xs px-2.5 py-1 rounded-lg border transition ${
+                    className={`text-xs px-3 py-1.5 rounded-xl border transition cursor-pointer font-medium ${
                       selectedGenre === gnr
-                        ? 'bg-red-50 border-red-500 text-red-600 font-medium'
-                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                        ? 'bg-red-600/30 border-red-500 text-red-300 font-bold shadow-xs'
+                        : 'border-white/10 bg-[#1c2236]/60 text-gray-400 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     {gnr}
@@ -187,18 +240,18 @@ export default function Home() {
 
             {/* Format Filter */}
             <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-1">
-                Format
+              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                Screen Format
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {formats.map((fmt) => (
                   <button
                     key={fmt}
                     onClick={() => setSelectedFormat(fmt)}
-                    className={`text-xs px-2.5 py-1 rounded-lg border transition ${
+                    className={`text-xs px-3 py-1.5 rounded-xl border transition cursor-pointer font-medium ${
                       selectedFormat === fmt
-                        ? 'bg-red-50 border-red-500 text-red-600 font-medium'
-                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                        ? 'bg-red-600/30 border-red-500 text-red-300 font-bold shadow-xs'
+                        : 'border-white/10 bg-[#1c2236]/60 text-gray-400 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     {fmt}
@@ -210,13 +263,14 @@ export default function Home() {
         </div>
 
         {/* Section Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
-              Recommended Movies & Events in {selectedCity}
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
+              <span>Now Showing in {selectedCity}</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Showing {filteredMovies.length} experiences ready for instant booking
+            <p className="text-xs sm:text-sm text-gray-400 mt-1">
+              Showing <span className="text-red-400 font-bold">{filteredMovies.length}</span> curated blockbuster movies & live experiences
             </p>
           </div>
         </div>
@@ -228,42 +282,51 @@ export default function Home() {
               <div
                 key={item.id}
                 onClick={() => navigateTo('movieDetails', { eventId: item.id })}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col border border-gray-200/70 cursor-pointer"
+                className="bg-[#141826] rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-red-600/20 transition-all duration-500 group flex flex-col border border-white/10 hover:border-red-500/50 hover:-translate-y-2 cursor-pointer relative"
               >
                 {/* Poster */}
-                <div className="relative aspect-[2/3] overflow-hidden bg-gray-100">
+                <div className="relative aspect-[2/3] overflow-hidden bg-gray-900">
                   <img
                     src={item.posterUrl}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                   />
-                  {/* Rating Tag */}
-                  <div className="absolute bottom-2 left-2 right-2 bg-black/85 backdrop-blur-xs text-white px-2.5 py-1 rounded-lg flex items-center justify-between text-xs">
-                    <span className="flex items-center gap-1 font-bold text-amber-400">
-                      <Star className="w-3.5 h-3.5 fill-amber-400" /> {item.rating}/10
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#141826] via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
+
+                  {/* Rating Badge */}
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 bg-black/85 backdrop-blur-md text-white px-3 py-1.5 rounded-xl flex items-center justify-between text-xs border border-white/10 shadow-lg">
+                    <span className="flex items-center gap-1.5 font-extrabold text-amber-400">
+                      <Star className="w-3.5 h-3.5 fill-amber-400" /> {item.rating}
                     </span>
-                    <span className="text-[10px] text-gray-300">
-                      {(item.votesCount / 1000).toFixed(1)}k votes
+                    <span className="text-[10px] text-gray-400 font-medium">
+                      {(item.votesCount / 1000).toFixed(1)}k
+                    </span>
+                  </div>
+
+                  {/* Top Format Pill */}
+                  <div className="absolute top-2.5 right-2.5">
+                    <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-rose-300 border border-rose-500/30">
+                      {item.formats?.[0] || '2D'}
                     </span>
                   </div>
                 </div>
 
                 {/* Details */}
-                <div className="p-3.5 flex-1 flex flex-col justify-between">
+                <div className="p-4 flex-1 flex flex-col justify-between">
                   <div>
-                    <h3 className="font-bold text-sm text-gray-900 group-hover:text-red-600 transition line-clamp-1">
+                    <h3 className="font-bold text-sm text-white group-hover:text-red-400 transition-colors line-clamp-1 leading-snug">
                       {item.title}
                     </h3>
-                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{item.genre}</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">{item.availableLanguages.join(', ')}</p>
+                    <p className="text-xs text-gray-400 mt-1 line-clamp-1 font-medium">{item.genre}</p>
+                    <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-1">{item.availableLanguages.join(', ')}</p>
                   </div>
 
-                  <div className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-[10px] font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                  <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-gray-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-lg">
                       {item.certification}
                     </span>
-                    <span className="text-xs font-bold text-red-600 group-hover:translate-x-0.5 transition flex items-center">
-                      Book <ChevronRight className="w-3.5 h-3.5" />
+                    <span className="text-xs font-black text-red-400 group-hover:text-red-300 group-hover:translate-x-1 transition-all flex items-center gap-0.5">
+                      Book Now <ChevronRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </div>

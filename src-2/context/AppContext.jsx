@@ -30,10 +30,21 @@ export const AppProvider = ({ children }) => {
     return storedUser ? { ...storedUser, userId: storedUser.id, role: storedUser.role === 'user' ? 'customer' : storedUser.role } : null;
   });
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalRole, setAuthModalRole] = useState('customer'); // 'customer' | 'admin' | 'staff'
   const [activeRole, setActiveRole] = useState(() => {
     const role = JSON.parse(localStorage.getItem('user') || 'null')?.role;
     return role === 'user' || !role ? 'customer' : role;
   });
+
+  const openAuthForRole = (role = 'customer') => {
+    if (currentUser && currentUser.role === role) {
+      setActiveRole(role);
+      navigateTo(role === 'admin' ? 'admin' : role === 'staff' ? 'staffScanner' : 'home');
+      return;
+    }
+    setAuthModalRole(role);
+    setAuthModalOpen(true);
+  };
 
   // Navigation / View State
   const [currentView, setCurrentView] = useState('home');
@@ -613,22 +624,166 @@ export const AppProvider = ({ children }) => {
   };
 
   // ----------------------------------------------------
+  // Movie & Catalog Management (Admin)
+  // ----------------------------------------------------
+  const addMovie = (movieData) => {
+    const newId = `m_${Date.now()}`;
+    const newMovie = {
+      id: newId,
+      type: movieData.type || 'movie',
+      title: movieData.title,
+      category: movieData.category || 'Movies',
+      description: movieData.description || 'No description provided.',
+      duration: Number(movieData.duration) || 120,
+      posterUrl: movieData.posterUrl || 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80',
+      bannerUrl: movieData.bannerUrl || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80',
+      language: movieData.language || 'Hindi',
+      availableLanguages: movieData.availableLanguages || [movieData.language || 'Hindi'],
+      genre: movieData.genre || 'Action / Drama',
+      genres: movieData.genres || ['Action', 'Drama'],
+      releaseDate: movieData.releaseDate || new Date().toISOString().split('T')[0],
+      certification: movieData.certification || 'U/A 13+',
+      cast: movieData.cast || [{ name: 'Lead Cast', role: 'Main Lead' }],
+      director: movieData.director || 'Director',
+      rating: Number(movieData.rating) || 8.5,
+      votesCount: 1500,
+      formats: movieData.formats || ['2D', '3D', 'IMAX 2D'],
+      isActive: true,
+    };
+
+    setMovies((prev) => [newMovie, ...prev]);
+
+    // Automatically schedule initial shows across venues in cities
+    const todayIso = new Date().toISOString().split('T')[0];
+    const newShows = [];
+    venues.forEach((v, vIdx) => {
+      ['11:00 AM', '04:30 PM', '08:45 PM'].forEach((t, tIdx) => {
+        newShows.push({
+          showId: `sh_auto_${Date.now()}_${vIdx}_${tIdx}`,
+          eventId: newId,
+          venueId: v.venueId,
+          screenId: v.screens[0]?.screenId || 's1',
+          showDate: todayIso,
+          showTime: t,
+          format: newMovie.formats[0] || '2D Dolby',
+          basePrice: 280,
+          availableSeats: 58,
+          totalSeats: 60,
+          occupancyRate: 5,
+          dynamicMultiplier: 1.0,
+        });
+      });
+    });
+
+    setShows((prev) => [...newShows, ...prev]);
+
+    logAuditAction(
+      currentUser?.name || 'Admin',
+      'Movie Added to Catalog',
+      `Added "${newMovie.title}" with ${newShows.length} automatically scheduled showtimes.`
+    );
+
+    addNotification({
+      title: 'Movie Added to Catalog 🎬',
+      message: `"${newMovie.title}" is now live and bookable across cinemas!`,
+      type: 'info',
+    });
+
+    return newMovie;
+  };
+
+  const deleteMovie = (movieId) => {
+    const movieToDelete = movies.find((m) => m.id === movieId);
+    setMovies((prev) => prev.filter((m) => m.id !== movieId));
+    setShows((prev) => prev.filter((s) => s.eventId !== movieId));
+
+    logAuditAction(
+      currentUser?.name || 'Admin',
+      'Movie Deleted',
+      `Removed "${movieToDelete?.title || movieId}" from catalog and cancelled all associated shows.`
+    );
+
+    addNotification({
+      title: 'Movie Removed 🗑️',
+      message: `"${movieToDelete?.title || 'Movie'}" has been removed from catalog.`,
+      type: 'warning',
+    });
+  };
+
+  const deleteShow = (showId) => {
+    const showToDelete = shows.find((s) => s.showId === showId);
+    setShows((prev) => prev.filter((s) => s.showId !== showId));
+
+    logAuditAction(
+      currentUser?.name || 'Admin',
+      'Show Cancelled & Removed',
+      `Removed show "${showId}" (${showToDelete?.showTime} on ${showToDelete?.showDate}).`
+    );
+
+    addNotification({
+      title: 'Show Cancelled 📅',
+      message: `Show ${showId} has been removed from the schedule.`,
+      type: 'info',
+    });
+  };
+
+  // ----------------------------------------------------
   // Auth Helpers
   // ----------------------------------------------------
-  const loginUser = async (email, password) => {
+  const loginUser = async (email, password, intendedRole = null) => {
     try {
       const { data } = await api.post('/auth/login', { email, password });
-      const user = { ...data.user, userId: data.user.id, role: data.user.role === 'user' ? 'customer' : data.user.role };
+      const normalizedRole = data.user.role === 'user' ? 'customer' : data.user.role;
+
+      // Role check if signed in via a specific role tab
+      if (intendedRole) {
+        const expected = intendedRole === 'user' ? 'customer' : intendedRole;
+        if (normalizedRole !== expected) {
+          return {
+            success: false,
+            message: `Role mismatch: This account has '${normalizedRole.toUpperCase()}' privileges. Please use the ${normalizedRole.toUpperCase()} login tab.`,
+          };
+        }
+      }
+
+      const user = { ...data.user, userId: data.user.id, role: normalizedRole };
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       setCurrentUser(user);
-      setActiveRole(user.role);
+      setActiveRole(normalizedRole);
       setAuthModalOpen(false);
-      logAuditAction(user.name, 'User Login', `Logged in successfully with role: ${user.role}`);
-      navigateTo(user.role === 'admin' ? 'admin' : user.role === 'staff' ? 'staffScanner' : 'home');
-      return { success: true };
+      logAuditAction(user.name, 'User Login', `Logged in successfully with role: ${normalizedRole}`);
+
+      if (normalizedRole === 'admin') {
+        navigateTo('admin');
+        addNotification({
+          title: 'Admin Access Granted 🛡️',
+          message: `Logged in as Admin: ${user.name}. Opening Admin Console.`,
+          type: 'info',
+        });
+      } else if (normalizedRole === 'staff') {
+        navigateTo('staffScanner');
+        addNotification({
+          title: 'Staff Access Granted 🎟️',
+          message: `Logged in as Staff: ${user.name}. Opening Gate Entry Scanner.`,
+          type: 'info',
+        });
+      } else {
+        navigateTo('home');
+        addNotification({
+          title: 'Signed In Successfully 🎉',
+          message: `Welcome back, ${user.name}!`,
+          type: 'info',
+        });
+      }
+
+      return { success: true, user };
     } catch (error) {
-      return { success: false, message: error.response?.data?.message || 'Unable to sign in. Please try again.' };
+      console.error('Sign in error:', error);
+      if (!error.response) {
+        return { success: false, message: 'Server is unreachable (Network Error). Please check if backend is running on port 5000.' };
+      }
+      return { success: false, message: error.response?.data?.message || 'Invalid email or password.' };
     }
   };
 
@@ -640,34 +795,39 @@ export const AppProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(data.user));
       setUsers((prev) => [...prev, newUser]);
       setCurrentUser(newUser);
-    setActiveRole('customer');
-    setAuthModalOpen(false);
-    navigateTo('home');
+      setActiveRole('customer');
+      setAuthModalOpen(false);
+      navigateTo('home');
 
-    logAuditAction(newUser.name, 'User Registration', `New user registered with email: ${newUser.email}`);
-    addNotification({
-      title: 'Welcome to BookMyShow!',
-      message: `Account activated for ${newUser.name}. Enjoy booking movies & events.`,
-      type: 'info',
-    });
-    return { success: true };
+      logAuditAction(newUser.name, 'User Registration', `New user registered with email: ${newUser.email}`);
+      addNotification({
+        title: 'Welcome to BookMyShow! 🎉',
+        message: `Account activated for ${newUser.name}. Enjoy booking movies & events.`,
+        type: 'info',
+      });
+      return { success: true };
     } catch (error) {
       return { success: false, message: error.response?.data?.message || 'Unable to create your account. Please try again.' };
     }
   };
 
-  const logoutUser = () => {
+  const logoutUser = (redirectTo = 'home') => {
+    const prevRole = currentUser?.role || 'customer';
+    const prevName = currentUser?.name || 'User';
+
     if (currentUser) {
-      logAuditAction(currentUser.name, 'User Logout', 'User signed out of session');
+      logAuditAction(prevName, 'User Logout', `Signed out of ${prevRole} session`);
     }
+
     setCurrentUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigateTo('home');
     setActiveRole('customer');
+    navigateTo(redirectTo);
+
     addNotification({
-      title: 'Logged Out',
-      message: 'You have been successfully signed out.',
+      title: 'Signed Out Successfully 👋',
+      message: `${prevRole === 'admin' ? 'Admin' : prevRole === 'staff' ? 'Staff' : 'You have been'} logged out.`,
       type: 'info',
     });
   };
@@ -751,6 +911,9 @@ export const AppProvider = ({ children }) => {
         setActiveRole,
         authModalOpen,
         setAuthModalOpen,
+        authModalRole,
+        setAuthModalRole,
+        openAuthForRole,
         loginUser,
         registerUser,
         logoutUser,
@@ -784,6 +947,7 @@ export const AppProvider = ({ children }) => {
         setBookings,
         processBooking,
         lastBooking,
+        setLastBooking,
         calculateRefund,
         cancelBooking,
 
@@ -803,6 +967,9 @@ export const AppProvider = ({ children }) => {
         validateCheckIn,
         triggerAutoDynamicPricing,
         reallocateLargerScreen,
+        addMovie,
+        deleteMovie,
+        deleteShow,
       }}
     >
       {children}

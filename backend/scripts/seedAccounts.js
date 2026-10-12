@@ -1,3 +1,5 @@
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 require("dotenv").config();
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
@@ -6,6 +8,7 @@ const User = require("../models/User");
 const accounts = [
   { name: "BookMyShow Admin", email: "admin@bookmyshow.local", password: "Admin@123", role: "admin" },
   { name: "BookMyShow Staff", email: "staff@bookmyshow.local", password: "Staff@123", role: "staff" },
+  { name: "Demo Customer", email: "user@bookmyshow.local", password: "User@123", role: "user" },
 ];
 
 async function seed() {

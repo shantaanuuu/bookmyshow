@@ -10,11 +10,12 @@ import {
   Calendar,
   Users,
   ShieldCheck,
-  ChevronLeft
+  ChevronLeft,
+  LogOut
 } from 'lucide-react';
 
 export default function StaffScanner() {
-  const { validateCheckIn, bookings, navigateTo } = useApp();
+  const { validateCheckIn, bookings, navigateTo, currentUser, logoutUser } = useApp();
 
   const [inputCode, setInputCode] = useState('');
   const [scanResult, setScanResult] = useState(null);
@@ -47,9 +48,23 @@ export default function StaffScanner() {
               Staff module for validating electronic QR tickets and admitting patrons (Staff: validateCheckIn)
             </p>
           </div>
-          <span className="text-xs bg-blue-900/40 text-blue-300 border border-blue-500/40 px-3 py-1.5 rounded-xl font-semibold">
-            Partner Gate Scanner Mode
-          </span>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs bg-blue-900/40 text-blue-300 border border-blue-500/40 px-3 py-1.5 rounded-xl font-semibold">
+              Gate Scanner Active
+            </span>
+            <div className="flex items-center gap-2 bg-gray-800/80 border border-gray-700 px-3 py-1.5 rounded-xl text-xs text-gray-200">
+              <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+              <span>{currentUser?.name || 'Gate Staff'}</span>
+            </div>
+            <button
+              onClick={() => logoutUser('home')}
+              className="flex items-center gap-1.5 bg-red-600/90 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition cursor-pointer shadow-sm"
+              title="Sign Out of Gate Terminal"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Staff Sign Out</span>
+            </button>
+          </div>
         </div>
       </div>
 

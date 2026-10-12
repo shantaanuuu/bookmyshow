@@ -15,4 +15,8 @@ export default defineConfig({
       'qrcode.react': path.resolve('./node_modules/qrcode.react'),
     },
   },
+  server: {
+    port: 5173,
+    host: true,
+  },
 })
